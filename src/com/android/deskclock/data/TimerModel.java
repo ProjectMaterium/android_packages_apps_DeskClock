@@ -678,16 +678,19 @@ final class TimerModel {
 
         if (nextExpiringTimer == null) {
             // Cancel the existing timer expiration callback.
-            final PendingIntent pi = PendingIntent.getService(mContext,
-                    0, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_NO_CREATE);
+            final PendingIntent pi = PendingIntent.getService(mContext, 0, intent,
+                    PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_NO_CREATE |
+                            PendingIntent.FLAG_IMMUTABLE);
+
             if (pi != null) {
                 mAlarmManager.cancel(pi);
                 pi.cancel();
             }
         } else {
             // Update the existing timer expiration callback.
-            final PendingIntent pi = PendingIntent.getService(mContext,
-                    0, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_UPDATE_CURRENT);
+            final PendingIntent pi = PendingIntent.getService(mContext, 0, intent,
+                    PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_UPDATE_CURRENT |
+                            PendingIntent.FLAG_IMMUTABLE);
             schedulePendingIntent(mAlarmManager, nextExpiringTimer.getExpirationTime(), pi);
         }
     }
@@ -835,11 +838,7 @@ final class TimerModel {
     }
 
     static void schedulePendingIntent(AlarmManager am, long triggerTime, PendingIntent pi) {
-        if (Utils.isMOrLater()) {
-            // Ensure the timer fires even if the device is dozing.
-            am.setExactAndAllowWhileIdle(ELAPSED_REALTIME_WAKEUP, triggerTime, pi);
-        } else {
-            am.setExact(ELAPSED_REALTIME_WAKEUP, triggerTime, pi);
-        }
+        // Ensure the timer fires even if the device is dozing.
+        am.setExactAndAllowWhileIdle(ELAPSED_REALTIME_WAKEUP, triggerTime, pi);
     }
 }
